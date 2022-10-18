@@ -5,6 +5,7 @@ export 'src/pages/guard.dart';
 export 'src/pages/transition_page.dart';
 
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -349,14 +350,16 @@ class RoutemasterDelegate extends RouterDelegate<RouteData>
   @override
   Future<bool> popRoute() async {
     assert(!_isDisposed);
-    final navigator = _state.stack._attachedNavigator!;
-    final popResult = await navigator.maybePop();
-    if (popResult) {
-      _state.stack.notifyListeners();
-      return true;
+    if (Platform.isAndroid || Platform.isIOS) {
+      final navigator = _state.stack._attachedNavigator!;
+      final popResult = await navigator.maybePop();
+      if (popResult) {
+        _state.stack.notifyListeners();
+        return true;
+      }
+      return false;
     }
-
-    return false;
+    return history.back();
   }
 
   /// Attempts to pops the top-level route. Returns `true` if a route was
