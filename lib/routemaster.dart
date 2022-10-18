@@ -349,8 +349,14 @@ class RoutemasterDelegate extends RouterDelegate<RouteData>
   @override
   Future<bool> popRoute() async {
     assert(!_isDisposed);
+    final navigator = _state.stack._attachedNavigator!;
+    final popResult = await navigator.maybePop();
+    if (popResult) {
+      _state.stack.notifyListeners();
+      return true;
+    }
 
-    return history.back();
+    return false;
   }
 
   /// Attempts to pops the top-level route. Returns `true` if a route was
