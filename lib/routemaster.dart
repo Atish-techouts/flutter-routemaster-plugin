@@ -161,6 +161,13 @@ class Routemaster {
     return _state.delegate.pop(value);
   }
 
+  /// Pops the current route from the router. Returns `true` if the pop was
+  /// successful, or `false` if it wasn't.
+  @optionalTypeArgs
+  Future<bool> popRoute() {
+    return _state.delegate.popRoute();
+  }
+
   /// Allows navigating through the chronological history of routes.
   ///
   /// This is the routes that the user has recently seen.
