@@ -168,6 +168,13 @@ class Routemaster {
     return _state.delegate.popRoute();
   }
 
+  /// Pops the current route from the router. Returns `true` if the pop was
+  /// successful, or `false` if it wasn't.
+  @optionalTypeArgs
+  Future<bool> mayBePop() {
+    return _state.delegate.mayBePop();
+  }
+
   /// Allows navigating through the chronological history of routes.
   ///
   /// This is the routes that the user has recently seen.
@@ -359,15 +366,28 @@ class RoutemasterDelegate extends RouterDelegate<RouteData>
     assert(!_isDisposed);
     if (Platform.isAndroid || Platform.isIOS) {
       final navigator = _state.stack._attachedNavigator!;
-      late final bool popResult;
-      if (_state.stack.length > 1) {
-        popResult = await navigator.maybePop();
-      } else {
-        popResult = await (navigatorKey as GlobalKey<NavigatorState>?)
-                ?.currentState
-                ?.maybePop() ??
-            await navigator.maybePop();
+
+      final popResult = await (navigatorKey as GlobalKey<NavigatorState>?)
+              ?.currentState
+              ?.maybePop() ??
+          await navigator.maybePop();
+      if (popResult) {
+        _state.stack.notifyListeners();
+        return true;
       }
+      return false;
+    }
+    return history.back();
+  }
+
+  /// Called by the [Router] when the [Router.backButtonDispatcher] reports that
+  /// the operating system is requesting that the current route be popped, for
+  @override
+  Future<bool> mayBePop() async {
+    assert(!_isDisposed);
+    if (Platform.isAndroid || Platform.isIOS) {
+      final navigator = _state.stack._attachedNavigator!;
+      final popResult = await navigator.maybePop();
       if (popResult) {
         _state.stack.notifyListeners();
         return true;
