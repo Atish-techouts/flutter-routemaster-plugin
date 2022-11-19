@@ -366,12 +366,18 @@ class RoutemasterDelegate extends RouterDelegate<RouteData>
     assert(!_isDisposed);
     if (Platform.isAndroid || Platform.isIOS) {
       final navigator = _state.stack._attachedNavigator!;
+      final currentRoute = navigator.currentRoute();
+      final isPageRoute = currentRoute is PageRoute;
       final popResult = await navigator.maybePop();
       if (popResult) {
         _state.stack.notifyListeners();
         return true;
       }
-      return history.back();
+      if (isPageRoute) {
+        return history.back();
+      } else {
+        return false;
+      }
     }
     return history.back();
   }
@@ -1253,6 +1259,22 @@ class _RoutemasterStateTrackerState extends State<_RoutemasterStateTracker> {
         oldDelegate.dispose();
       });
     }
+  }
+}
+
+/// Extensions on NavigatorState
+extension NavigatorStateExtension on NavigatorState {
+  /// Returns the current route on the Navigator
+  Route<dynamic>? currentRoute() {
+    Route<dynamic>? result;
+
+    // Workaround (never pops, predicate always returns true)
+    popUntil((route) {
+      result = route;
+      return true;
+    });
+
+    return result;
   }
 }
 
