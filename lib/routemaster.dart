@@ -366,16 +366,12 @@ class RoutemasterDelegate extends RouterDelegate<RouteData>
     assert(!_isDisposed);
     if (Platform.isAndroid || Platform.isIOS) {
       final navigator = _state.stack._attachedNavigator!;
-
-      final popResult = await (navigatorKey as GlobalKey<NavigatorState>?)
-              ?.currentState
-              ?.maybePop() ??
-          await navigator.maybePop();
+      final popResult = await navigator.maybePop();
       if (popResult) {
         _state.stack.notifyListeners();
         return true;
       }
-      return false;
+      return history.back();
     }
     return history.back();
   }
